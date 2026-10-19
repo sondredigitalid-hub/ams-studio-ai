@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walk & Runner - AMS Studio Ai</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              bg: '#121318',
+              card: '#1b1c24',
+              input: '#232530',
+              border: '#2e303d'
+            }
+          },
+          animation: {
+            'spin-slow': 'spin 3s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-thumb { background: #2e303d; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    .custom-gradient-text {
+      background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .dark .custom-gradient-text {
+      background: linear-gradient(135deg, #6ee7b7 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#121318] text-gray-900 dark:text-gray-100 font-sans min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white transition-colors duration-300">
+
+  <!-- HEADER CONTAINER (Dimuat otomatis oleh global.js) -->
+  <div id="header-container"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow flex items-start justify-center p-4 sm:p-6 lg:p-8 pt-20 sm:pt-24 lg:pt-32">
+    <div class="w-full max-w-4xl bg-white dark:bg-[#1b1c24] border border-gray-200 dark:border-gray-800/90 rounded-2xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6 relative overflow-hidden transition-colors duration-300">
+      
+      <!-- Decorative Glow -->
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-400/20 dark:bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Header Section -->
+      <div class="flex items-start sm:items-center space-x-4 border-b border-gray-200 dark:border-gray-800/80 pb-5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-emerald-500/30 shrink-0">
+          <i class="fa-solid fa-camera-rotate"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight custom-gradient-text flex items-center gap-2">
+            Walk & Runner Selfie
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Create dynamic selfie-vlog videos of your AI avatar walking or running while narrating.
+          </p>
+        </div>
+      </div>
+
+      <!-- Layout Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Left Column: Content Inputs -->
+        <div class="space-y-5">
+          
+          <!-- Topic / URL Input -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-emerald-500 dark:text-emerald-400"></i> Auto-Generate Script
+              </span>
+              <span class="text-[10px] text-gray-500">From Topic or URL</span>
+            </label>
+            <div class="flex gap-2">
+              <input 
+                type="text" 
+                id="topicInput"
+                placeholder="E.g. Morning motivation for developers..." 
+                class="flex-1 bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition shadow-inner"
+              />
+              <button 
+                type="button" 
+                onclick="generateVlogScript()"
+                id="btnFetchUrl"
+                class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-medium px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition shadow-md shadow-emerald-600/20 shrink-0"
+              >
+                <i class="fa-solid fa-pen-nib"></i> 
+                <span>Write</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Vlog Script Textarea -->
+          <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <i class="fa-solid fa-file-audio text-emerald-500 dark:text-emerald-400"></i> Spoken Script (Vlog)
+              </label>
+              <span id="charCount" class="text-[10px] text-gray-500">0 / 1500 chars</span>
+            </div>
+            <textarea 
+              id="scriptTextarea"
+              rows="6" 
+              oninput="updateCharCount()"
+              placeholder="Hey guys! Welcome back to my run. Today I want to talk about..." 
+              class="w-full bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 focus:border-emerald-500 rounded-xl p-3.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition resize-none shadow-inner leading-relaxed"
+            ></textarea>
+            <div class="flex justify-between items-center mt-2">
+              <button onclick="insertSampleScript()" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-lightbulb"></i> Use Sample
+              </button>
+              <button onclick="clearScript()" class="text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                Clear
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Settings -->
+        <div class="space-y-4">
+          
+          <!-- Activity & Environment Selectors -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Activity Pace</label>
+              <div class="relative">
+                <select id="paceSelect" class="w-full bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl px-3 py-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500 appearance-none transition">
+                  <option value="Casual Walk">Casual Walk (Steady)</option>
+                  <option value="Power Walk">Power Walk</option>
+                  <option value="Light Jogging" selected>Light Jogging (Bouncy)</option>
+                  <option value="Fast Run">Fast Run (Shaky Cam)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-[10px] text-gray-500"></i>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Background Scene</label>
+              <div class="relative">
+                <select id="bgSelect" class="w-full bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl px-3 py-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500 appearance-none transition">
+                  <option value="City Park Morning" selected>City Park (Morning)</option>
+                  <option value="Neon Cyberpunk Street">Neon Street (Night)</option>
+                  <option value="Beach Boardwalk">Beach Boardwalk</option>
+                  <option value="Forest Trail">Forest Trail</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-[10px] text-gray-500"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Avatar / Vlogger Selection -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-user-astronaut text-emerald-500 dark:text-emerald-400"></i> Vlogger Avatar
+              </span>
+              <span id="selectedPresenterName" class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Andi</span>
+            </label>
+            
+            <div class="grid grid-cols-2 gap-3" id="presenterGrid">
+              <!-- Andi -->
+              <div onclick="selectPresenter('Andi', this)" class="presenter-card relative bg-gray-50 dark:bg-[#232530] border-2 border-emerald-500 rounded-xl overflow-hidden cursor-pointer shadow-lg shadow-emerald-500/10 group transition transform active:scale-98">
+                <div class="h-24 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400" alt="Andi" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <span class="badge absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                </div>
+                <div class="p-2 text-center bg-white dark:bg-[#1b1c24]">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Andi</p>
+                  <p class="text-[10px] text-gray-500">Fitness Vlogger</p>
+                </div>
+              </div>
+              <!-- Alya -->
+              <div onclick="selectPresenter('Alya', this)" class="presenter-card relative bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl overflow-hidden cursor-pointer group hover:border-gray-400 transition transform active:scale-98">
+                <div class="h-24 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400" alt="Alya" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <span class="badge hidden absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                </div>
+                <div class="p-2 text-center bg-white dark:bg-[#1b1c24]">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Alya</p>
+                  <p class="text-[10px] text-gray-500">Casual Runner</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ambient Sound Toggle -->
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#232530] rounded-xl border border-gray-300 dark:border-gray-700/50">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <i class="fa-solid fa-wind text-xs"></i>
+              </div>
+              <div>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Ambient & Footsteps</span>
+                <span class="text-[10px] text-gray-500 dark:text-gray-400 block">Add realistic breathing & steps FX</span>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="ambientToggle" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <hr class="border-gray-200 dark:border-gray-800/80">
+
+      <!-- Bottom Action Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-end pt-1">
+        <button type="button" onclick="startGeneration()" class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-98 text-white font-semibold text-sm px-10 py-3 rounded-xl flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/30 transition duration-200">
+          <i class="fa-solid fa-video text-base"></i> 
+          <span>Generate Vlog Scene</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- 1. Progress Modal -->
+  <div id="generationModal" class="fixed inset-0 bg-gray-900/50 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#1b1c24] border border-gray-200 dark:border-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-6">
+      
+      <div class="text-center space-y-2">
+        <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-2xl animate-pulse">
+          <i class="fa-solid fa-person-running animate-bounce"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Rendering Walk & Run Scene</h3>
+        <p id="progressSubtext" class="text-xs text-gray-500 dark:text-gray-400">Initializing environment...</p>
+      </div>
+
+      <!-- Pipeline Bar -->
+      <div class="space-y-4">
+        <div class="w-full bg-gray-100 dark:bg-[#232530] rounded-full h-3 overflow-hidden border border-gray-300 dark:border-gray-700/50">
+          <div id="progressBar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-full w-0 transition-all duration-300"></div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
+          <div id="step1Indicator" class="p-2 rounded-lg bg-gray-50 dark:bg-[#232530] border border-gray-200 dark:border-gray-700 transition">
+            <i class="fa-solid fa-microphone block mb-1 text-sm"></i> 1. Voice & Breath
+          </div>
+          <div id="step2Indicator" class="p-2 rounded-lg bg-gray-50 dark:bg-[#232530] border border-gray-200 dark:border-gray-700 transition">
+            <i class="fa-solid fa-tree block mb-1 text-sm"></i> 2. Environment
+          </div>
+          <div id="step3Indicator" class="p-2 rounded-lg bg-gray-50 dark:bg-[#232530] border border-gray-200 dark:border-gray-700 transition">
+            <i class="fa-solid fa-camera block mb-1 text-sm"></i> 3. Selfie Motion
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div class="bg-gray-100 dark:bg-[#121318] border border-gray-300 dark:border-gray-800 rounded-xl p-3 h-32 overflow-y-auto font-mono text-xs text-emerald-600 dark:text-emerald-400 space-y-1" id="terminalLogs">
+        <div>[SYSTEM] Pipeline initialized for: <span id="logPresenter">Andi</span></div>
+      </div>
+
+      <button onclick="cancelGeneration()" class="w-full py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-xl transition">
+        Cancel Rendering
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. Result Modal -->
+  <div id="resultModal" class="fixed inset-0 bg-gray-900/60 dark:bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#1b1c24] border border-gray-200 dark:border-gray-800 rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl relative">
+      
+      <div class="p-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white">Vlog Ready (9:16)</h3>
+        </div>
+        <button onclick="closeResultModal()" class="text-gray-500 hover:text-white p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Player Area -->
+      <div class="relative bg-black aspect-[9/16] flex items-center justify-center group overflow-hidden">
+        <div id="videoMockPlayer" class="w-full h-full relative flex items-center justify-center">
+          <img id="resultAvatarImg" src="https://images.unsplash.com/photo-1542380532-6a75fec6d3dc?w=600" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/30"></div>
+          
+          <div class="absolute top-4 right-4 bg-black/50 text-white text-[10px] px-2 py-1 rounded border border-white/20 backdrop-blur-sm flex items-center gap-1">
+             <i class="fa-solid fa-video"></i> REC
+          </div>
+
+          <div class="absolute bottom-8 inset-x-4 text-center">
+            <span id="subtitleText" class="bg-black/70 text-white text-sm font-bold px-3 py-1.5 rounded-lg drop-shadow-md">
+              "Hey guys, currently on my morning jog..."
+            </span>
+          </div>
+
+          <button id="playBtn" onclick="togglePlayState()" class="absolute w-14 h-14 bg-emerald-500/90 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center text-xl shadow-xl shadow-emerald-500/50 transition transform hover:scale-110">
+            <i class="fa-solid fa-play ml-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between text-[11px] text-gray-600 dark:text-gray-400 gap-1">
+          <div><i class="fa-solid fa-person-running"></i> <span id="resPace" class="font-semibold text-white">Light Jogging</span></div>
+          <div><i class="fa-solid fa-location-dot"></i> <span id="resBg" class="font-semibold text-white">City Park Morning</span></div>
+        </div>
+        <button class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-download"></i> Download Short (.MP4)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <i id="toastIcon" class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Action completed!</span>
+  </div>
+
+  <!-- SCRIPT GLOBAL (Termasuk Header Loader & Dark Mode) -->
+  <script src="js/global.js"></script>
+
+  <!-- SCRIPT HALAMAN WALK RUNNER -->
+  <script>
+    let selectedPresenter = 'Andi';
+    let generationInterval = null;
+    let isPlaying = false;
+
+    const presenterImages = {
+      'Andi': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600',
+      'Alya': 'https://images.unsplash.com/photo-1542380532-6a75fec6d3dc?w=600'
+    };
+
+    function updateCharCount() {
+      const textarea = document.getElementById('scriptTextarea');
+      document.getElementById('charCount').innerText = `${textarea.value.length} / 1500 chars`;
+    }
+
+    function insertSampleScript() {
+      document.getElementById('scriptTextarea').value = "Hey everyone! Welcome to today's vlog. I'm just getting my morning run in. The weather is absolutely perfect right now, and I wanted to talk briefly about consistency in our daily routines while I get these steps in.";
+      updateCharCount();
+      showToast("Vlog script inserted!", "fa-lightbulb");
+    }
+
+    function clearScript() {
+      document.getElementById('scriptTextarea').value = "";
+      updateCharCount();
+    }
+
+    function selectPresenter(name, element) {
+      selectedPresenter = name;
+      document.getElementById('selectedPresenterName').innerText = name;
+      const cards = document.querySelectorAll('.presenter-card');
+      cards.forEach(card => {
+        card.classList.remove('border-2', 'border-emerald-500', 'shadow-lg', 'shadow-emerald-500/10');
+        card.classList.add('border', 'border-gray-300', 'dark:border-gray-700/60');
+        card.querySelector('.badge')?.classList.add('hidden');
+      });
+      element.classList.remove('border', 'border-gray-300', 'dark:border-gray-700/60');
+      element.classList.add('border-2', 'border-emerald-500', 'shadow-lg', 'shadow-emerald-500/10');
+      element.querySelector('.badge')?.classList.remove('hidden');
+    }
+
+    function generateVlogScript() {
+      const topic = document.getElementById('topicInput').value;
+      if(!topic) return showToast("Enter a topic first!", "fa-triangle-exclamation");
+      
+      const btn = document.getElementById('btnFetchUrl');
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i>`;
+      setTimeout(() => {
+        btn.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Write`;
+        document.getElementById('scriptTextarea').value = `*Huff huff* What's up guys! Currently running and thinking about ${topic}. It's crazy how important this is right now. Let me share 2 quick thoughts with you while I try not to trip over this sidewalk!`;
+        updateCharCount();
+      }, 1000);
+    }
+
+    function startGeneration() {
+      const scriptText = document.getElementById('scriptTextarea').value.trim();
+      if (!scriptText) {
+        return showToast("Please enter the vlog script!", "fa-triangle-exclamation");
+      }
+
+      document.getElementById('generationModal').classList.remove('hidden');
+      const progressBar = document.getElementById('progressBar');
+      const logs = document.getElementById('terminalLogs');
+      const subtext = document.getElementById('progressSubtext');
+
+      progressBar.style.width = '0%';
+      logs.innerHTML = `<div>[SYSTEM] Initiating Walk & Runner Engine...</div>`;
+      
+      let progress = 0;
+      generationInterval = setInterval(() => {
+        progress += 5;
+        progressBar.style.width = `${progress}%`;
+
+        if (progress === 20) {
+          subtext.innerText = "Step 1: Voice & Breathing Sync...";
+          document.getElementById('step1Indicator').classList.add('bg-emerald-100', 'text-emerald-600');
+          appendLog(`[Audio] Generating TTS with ${document.getElementById('paceSelect').value} breathing markers.`);
+        } else if (progress === 50) {
+          subtext.innerText = "Step 2: Environment Rendering...";
+          document.getElementById('step2Indicator').classList.add('bg-emerald-100', 'text-emerald-600');
+          appendLog(`[Scene] Loading background: ${document.getElementById('bgSelect').value}.`);
+        } else if (progress === 80) {
+          subtext.innerText = "Step 3: Selfie Camera Motion...";
+          document.getElementById('step3Indicator').classList.add('bg-emerald-100', 'text-emerald-600');
+          appendLog(`[Motion] Applying shaky-cam and arm movement mechanics.`);
+        } else if (progress >= 100) {
+          clearInterval(generationInterval);
+          
+          // Simpan Hasil Generasi ke LocalStorage History
+          if (typeof saveHistoryItem === "function") {
+            saveHistoryItem({
+              id: Date.now(),
+              title: scriptText.substring(0, 45) + (scriptText.length > 45 ? "..." : ""),
+              type: "Walk Runner",
+              date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              status: "Completed"
+            });
+          }
+
+          setTimeout(() => {
+            document.getElementById('generationModal').classList.add('hidden');
+            openResultModal();
+          }, 500);
+        }
+      }, 150);
+    }
+
+    function appendLog(text) {
+      const logs = document.getElementById('terminalLogs');
+      logs.innerHTML += `<div>${text}</div>`;
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function cancelGeneration() {
+      if(generationInterval) clearInterval(generationInterval);
+      document.getElementById('generationModal').classList.add('hidden');
+    }
+
+    function openResultModal() {
+      document.getElementById('resPace').innerText = document.getElementById('paceSelect').value;
+      document.getElementById('resBg').innerText = document.getElementById('bgSelect').value;
+      document.getElementById('resultAvatarImg').src = presenterImages[selectedPresenter] || presenterImages['Andi'];
+      document.getElementById('resultModal').classList.remove('hidden');
+    }
+
+    function closeResultModal() {
+      document.getElementById('resultModal').classList.add('hidden');
+      isPlaying = false;
+      document.getElementById('playBtn').innerHTML = `<i class="fa-solid fa-play ml-1"></i>`;
+    }
+
+    function togglePlayState() {
+      isPlaying = !isPlaying;
+      const playBtn = document.getElementById('playBtn');
+      if (isPlaying) {
+        playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+        document.getElementById('resultAvatarImg').classList.add('animate-pulse');
+      } else {
+        playBtn.innerHTML = `<i class="fa-solid fa-play ml-1"></i>`;
+        document.getElementById('resultAvatarImg').classList.remove('animate-pulse');
+      }
+    }
+
+    function showToast(message, iconClass = "fa-circle-check") {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = message;
+      document.getElementById('toastIcon').className = `fa-solid ${iconClass}`;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

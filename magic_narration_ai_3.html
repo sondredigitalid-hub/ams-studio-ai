@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Narration - AI Video Generator</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              bg: '#121318',
+              card: '#1b1c24',
+              input: '#232530',
+              border: '#2e303d'
+            }
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2s infinite',
+            'spin-slow': 'spin 3s linear infinite',
+            'shimmer': 'shimmer 2s infinite'
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 15px rgba(37, 99, 235, 0.4)' },
+              '50%': { boxShadow: '0 0 30px rgba(37, 99, 235, 0.8)' }
+            },
+            shimmer: {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-thumb { background: #2e303d; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    .custom-gradient-text {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .dark .custom-gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#121318] text-gray-900 dark:text-gray-100 font-sans min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white transition-colors duration-300">
+
+  <!-- HEADER CONTAINER (Dimuat otomatis oleh global.js) -->
+  <div id="header-container"></div>
+
+  <main class="flex-grow flex items-start justify-center p-4 sm:p-6 lg:p-8 pt-20 sm:pt-24 lg:pt-32">
+    <div class="w-full max-w-4xl bg-white dark:bg-[#1b1c24] border border-gray-200 dark:border-gray-800/90 rounded-2xl p-6 sm:p-8 shadow-xl dark:shadow-2xl space-y-6 relative overflow-hidden transition-colors duration-300">
+      
+      <!-- Top Decorative Glow -->
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Header Section -->
+      <div class="flex items-start sm:items-center space-x-4 border-b border-gray-200 dark:border-gray-800/80 pb-5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-500/30 shrink-0">
+          <i class="fa-regular fa-comment-dots"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight custom-gradient-text flex items-center gap-2">
+            Magic Narration
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Turn any text or URL into an engaging narration video.
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Input Grid (2 Columns) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Left Column: Inputs -->
+        <div class="space-y-5">
+          
+          <!-- URL Input Section -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-link text-blue-500 dark:text-blue-400"></i> Auto-Generate from URL
+              </span>
+              <span class="text-[10px] text-gray-500">Blog / Article URL</span>
+            </label>
+            <div class="flex gap-2">
+              <input 
+                type="url" 
+                id="urlInput"
+                placeholder="Paste article or blog URL..." 
+                class="flex-1 bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition shadow-inner"
+              />
+              <button 
+                type="button" 
+                onclick="fetchArticleFromUrl()"
+                id="btnFetchUrl"
+                class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-medium px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition shadow-md shadow-blue-600/20 shrink-0"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 
+                <span>Generate</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Script / Brief Input Textarea -->
+          <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <i class="fa-solid fa-file-lines text-blue-500 dark:text-blue-400"></i> Your Brief / Prompt
+              </label>
+              <span id="charCount" class="text-[10px] text-gray-500">0 / 2000 chars</span>
+            </div>
+            <textarea 
+              id="scriptTextarea"
+              rows="8" 
+              oninput="updateCharCount()"
+              placeholder="Enter your topic, script, or paste content here..." 
+              class="w-full bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 focus:border-blue-500 rounded-xl p-3.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition resize-none shadow-inner leading-relaxed"
+            ></textarea>
+            <div class="flex justify-between items-center mt-2">
+              <button onclick="insertSampleScript()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-lightbulb"></i> Use Sample Script
+              </button>
+              <button onclick="clearScript()" class="text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition">
+                Clear
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Settings & Presenter Picker -->
+        <div class="space-y-5">
+          
+          <!-- Tone Selector -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+              <span>Tone</span>
+              <span class="text-[10px] text-gray-500">Narration Mood</span>
+            </label>
+            <div class="relative">
+              <select id="toneSelect" class="w-full bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer appearance-none transition">
+                <option value="Savage Debunker" selected>Savage Debunker</option>
+                <option value="Professional Presenter">Professional Presenter</option>
+                <option value="Casual Storyteller">Casual Storyteller</option>
+                <option value="Dramatic News">Dramatic News</option>
+                <option value="Energetic Marketer">Energetic Marketer</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500 dark:text-gray-400">
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Presenter Selection Grid -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-user-tie text-blue-500 dark:text-blue-400"></i> Presenter
+              </span>
+              <span id="selectedPresenterName" class="text-xs font-bold text-blue-600 dark:text-blue-400">Andi</span>
+            </label>
+            
+            <div class="grid grid-cols-2 gap-3" id="presenterGrid">
+              
+              <!-- Andi Avatar -->
+              <div onclick="selectPresenter('Andi', this)" class="presenter-card relative bg-gray-50 dark:bg-[#232530] border-2 border-blue-500 rounded-xl overflow-hidden cursor-pointer shadow-lg shadow-blue-500/10 group transition transform active:scale-98">
+                <div class="h-28 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80" alt="Andi" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <span class="badge absolute top-2 right-2 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                </div>
+                <div class="p-2 text-center bg-white dark:bg-[#1b1c24]">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Andi</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">Indonesian Male • Energetic</p>
+                </div>
+              </div>
+
+              <!-- Bambang Avatar -->
+              <div onclick="selectPresenter('Bambang', this)" class="presenter-card relative bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl overflow-hidden cursor-pointer group hover:border-gray-400 dark:hover:border-gray-500 transition transform active:scale-98">
+                <div class="h-28 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80" alt="Bambang" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <span class="badge hidden absolute top-2 right-2 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                </div>
+                <div class="p-2 text-center bg-white dark:bg-[#1b1c24]">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Bambang</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">Indonesian Male • Formal</p>
+                </div>
+              </div>
+
+              <!-- Jajang Avatar -->
+              <div onclick="selectPresenter('Jajang', this)" class="presenter-card relative bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl overflow-hidden cursor-pointer group hover:border-gray-400 dark:hover:border-gray-500 transition transform active:scale-98">
+                <div class="h-28 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" alt="Jajang" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <span class="badge hidden absolute top-2 right-2 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                </div>
+                <div class="p-2 text-center bg-white dark:bg-[#1b1c24]">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Jajang</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">Casual Male • Friendly</p>
+                </div>
+              </div>
+
+              <!-- Alya Avatar -->
+              <div onclick="selectPresenter('Alya', this)" class="presenter-card relative bg-gray-50 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl overflow-hidden cursor-pointer group hover:border-gray-400 dark:hover:border-gray-500 transition transform active:scale-98">
+                <div class="h-28 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" alt="Alya" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <span class="badge hidden absolute top-2 right-2 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+                </div>
+                <div class="p-2 text-center bg-white dark:bg-[#1b1c24]">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">Alya</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">Female Voice • Soft</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Separator line -->
+      <hr class="border-gray-200 dark:border-gray-800/80">
+
+      <!-- Bottom Action Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+        
+        <!-- Bulk Generation Counter -->
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+          <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Bulk Generation:</span>
+          <div class="flex items-center bg-gray-100 dark:bg-[#232530] border border-gray-300 dark:border-gray-700/60 rounded-xl overflow-hidden p-1">
+            <button 
+              type="button" 
+              onclick="adjustBulk(-1)" 
+              class="w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition active:scale-95"
+            >
+              <i class="fa-solid fa-minus text-xs"></i>
+            </button>
+            <span id="bulkCount" class="w-10 text-center text-sm font-bold text-gray-900 dark:text-white">1</span>
+            <button 
+              type="button" 
+              onclick="adjustBulk(1)" 
+              class="w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition active:scale-95"
+            >
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Generate Button -->
+        <button 
+          type="button" 
+          onclick="startVideoGeneration()"
+          id="btnMainGenerate"
+          class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-semibold text-sm px-8 py-3 rounded-xl flex items-center justify-center gap-2.5 shadow-xl shadow-blue-600/30 transition duration-200"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles text-base"></i> 
+          <span>Generate Video</span>
+        </button>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 dark:border-gray-800/60 py-4 text-center text-xs text-gray-500">
+    <p>© 2026 AMS Studio Ai. Powered by AMS Studio.</p>
+  </footer>
+
+  <!-- MODALS -->
+
+  <!-- 1. Generation Progress Modal -->
+  <div id="generationModal" class="fixed inset-0 bg-gray-900/50 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#1b1c24] border border-gray-200 dark:border-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-6">
+      
+      <div class="text-center space-y-2">
+        <div class="w-16 h-16 bg-blue-100 dark:bg-blue-600/20 rounded-2xl flex items-center justify-center mx-auto border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 text-2xl animate-pulse">
+          <i class="fa-solid fa-gear animate-spin-slow"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Generating AI Video</h3>
+        <p id="progressSubtext" class="text-xs text-gray-500 dark:text-gray-400">Initializing pipeline...</p>
+      </div>
+
+      <!-- Step Progress Pipeline Bar -->
+      <div class="space-y-4">
+        <div class="w-full bg-gray-100 dark:bg-[#232530] rounded-full h-3 overflow-hidden border border-gray-300 dark:border-gray-700/50">
+          <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-0 transition-all duration-300"></div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">
+          <div id="step1Indicator" class="p-2 rounded-lg bg-gray-50 dark:bg-[#232530] border border-gray-200 dark:border-gray-700 transition">
+            <i class="fa-solid fa-brain block mb-1 text-sm"></i> 1. LLM Scripting
+          </div>
+          <div id="step2Indicator" class="p-2 rounded-lg bg-gray-50 dark:bg-[#232530] border border-gray-200 dark:border-gray-700 transition">
+            <i class="fa-solid fa-microphone block mb-1 text-sm"></i> 2. TTS Synthesis
+          </div>
+          <div id="step3Indicator" class="p-2 rounded-lg bg-gray-50 dark:bg-[#232530] border border-gray-200 dark:border-gray-700 transition">
+            <i class="fa-solid fa-video block mb-1 text-sm"></i> 3. SensNova Avatar
+          </div>
+        </div>
+      </div>
+
+      <!-- Terminal Output -->
+      <div class="bg-gray-100 dark:bg-[#121318] border border-gray-300 dark:border-gray-800 rounded-xl p-3 h-32 overflow-y-auto font-mono text-xs text-green-600 dark:text-green-400 space-y-1" id="terminalLogs">
+        <div>[SYSTEM] Pipeline initialized for presenter: <span id="logPresenter">Andi</span></div>
+      </div>
+
+      <button onclick="cancelGeneration()" class="w-full py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-xl transition">
+        Cancel Process
+      </button>
+
+    </div>
+  </div>
+
+  <!-- 2. Video Preview Result Modal -->
+  <div id="resultModal" class="fixed inset-0 bg-gray-900/60 dark:bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-[#1b1c24] border border-gray-200 dark:border-gray-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl relative">
+      
+      <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">Video Ready - SensNova Render</h3>
+        </div>
+        <button onclick="closeResultModal()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="relative bg-black aspect-video flex items-center justify-center group overflow-hidden">
+        <div id="videoMockPlayer" class="w-full h-full relative flex items-center justify-center">
+          <img id="resultAvatarImg" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30"></div>
+          
+          <div class="absolute bottom-12 inset-x-6 text-center">
+            <span id="subtitleText" class="bg-black/75 text-yellow-300 text-sm font-semibold px-3 py-1.5 rounded-lg border border-yellow-500/30 backdrop-blur-sm">
+              "SensNova AI turns your ideas into viral engaging narration videos!"
+            </span>
+          </div>
+
+          <button id="playBtn" onclick="togglePlayState()" class="absolute w-16 h-16 bg-blue-600/90 hover:bg-blue-500 text-white rounded-full flex items-center justify-center text-2xl shadow-xl shadow-blue-600/50 transition transform hover:scale-110">
+            <i class="fa-solid fa-play ml-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between text-xs text-gray-600 dark:text-gray-400 gap-2">
+          <div>Presenter: <span id="resPresenter" class="text-gray-900 dark:text-white font-semibold">Andi</span></div>
+          <div>Tone: <span id="resTone" class="text-gray-900 dark:text-white font-semibold">Savage Debunker</span></div>
+          <div>Duration: <span class="text-gray-900 dark:text-white font-semibold">00:32</span></div>
+          <div>Resolution: <span class="text-blue-600 dark:text-blue-400 font-semibold">1080p FHD</span></div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="downloadMockVideo()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20">
+            <i class="fa-solid fa-download"></i> Download Video (.MP4)
+          </button>
+          <button onclick="copyShareableLink()" class="bg-gray-100 dark:bg-[#232530] hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-semibold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition border border-gray-300 dark:border-gray-700/60">
+            <i class="fa-solid fa-share-nodes"></i> Share
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <i id="toastIcon" class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Action completed successfully!</span>
+  </div>
+
+  <!-- SCRIPT GLOBAL (Termasuk Header Loader & Dark Mode) -->
+  <script src="js/global.js"></script>
+
+  <!-- SCRIPT HALAMAN MAGIC NARRATION -->
+  <script>
+    let selectedPresenter = 'Andi';
+    let bulkCount = 1;
+    let generationInterval = null;
+    let isPlaying = false;
+
+    const presenters = {
+      'Andi': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+      'Bambang': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
+      'Jajang': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800',
+      'Alya': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800'
+    };
+
+    function updateCharCount() {
+      const textarea = document.getElementById('scriptTextarea');
+      document.getElementById('charCount').innerText = `${textarea.value.length} / 2000 chars`;
+    }
+
+    function insertSampleScript() {
+      const sample = "Tahukah kamu bahwa teknologi AI di tahun 2026 dapat mengubah seluruh konten tulisan menjadi narasi video secara instan? SensNova Magic Narration memungkinkan kamu membuat konten edukasi, berita, maupun promosi tanpa perlu merekam suara atau kamera!";
+      document.getElementById('scriptTextarea').value = sample;
+      updateCharCount();
+      showToast("Sample script inserted!", "fa-lightbulb");
+    }
+
+    function clearScript() {
+      document.getElementById('scriptTextarea').value = "";
+      updateCharCount();
+    }
+
+    function selectPresenter(name, element) {
+      selectedPresenter = name;
+      document.getElementById('selectedPresenterName').innerText = name;
+
+      const cards = document.querySelectorAll('.presenter-card');
+      cards.forEach(card => {
+        card.classList.remove('border-2', 'border-blue-500', 'shadow-lg', 'shadow-blue-500/10');
+        card.classList.add('border', 'border-gray-300', 'dark:border-gray-700/60');
+        card.querySelector('.badge')?.classList.add('hidden');
+      });
+
+      element.classList.remove('border', 'border-gray-300', 'dark:border-gray-700/60');
+      element.classList.add('border-2', 'border-blue-500', 'shadow-lg', 'shadow-blue-500/10');
+      element.querySelector('.badge')?.classList.remove('hidden');
+
+      showToast(`Selected presenter: ${name}`, "fa-user-check");
+    }
+
+    function adjustBulk(delta) {
+      bulkCount = Math.max(1, Math.min(10, bulkCount + delta));
+      document.getElementById('bulkCount').innerText = bulkCount;
+    }
+
+    function fetchArticleFromUrl() {
+      const urlInput = document.getElementById('urlInput');
+      const url = urlInput.value.trim();
+
+      if (!url) {
+        showToast("Please enter a valid URL first!", "fa-triangle-exclamation");
+        return;
+      }
+
+      const btn = document.getElementById('btnFetchUrl');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Fetching...`;
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate`;
+        
+        document.getElementById('scriptTextarea').value = `[Scraped Content from ${url}]\n\nSensNova LLM merangkum artikel ini: Perkembangan teknologi Generative AI mempercepat produksi konten hingga 10x lipat. Penggunaan Avatar AI dan TTS natural mampu meningkatkan engagement hingga 85% dibanding teks biasa.`;
+        updateCharCount();
+        showToast("Article content extracted & summarized!", "fa-circle-check");
+      }, 1500);
+    }
+
+    function startVideoGeneration() {
+      const scriptText = document.getElementById('scriptTextarea').value.trim();
+      
+      if (!scriptText) {
+        showToast("Please write a script or generate from URL!", "fa-triangle-exclamation");
+        return;
+      }
+
+      document.getElementById('generationModal').classList.remove('hidden');
+      document.getElementById('logPresenter').innerText = selectedPresenter;
+      
+      const progressBar = document.getElementById('progressBar');
+      const logs = document.getElementById('terminalLogs');
+      const subtext = document.getElementById('progressSubtext');
+
+      progressBar.style.width = '0%';
+      logs.innerHTML = `<div>[SYSTEM] Pipeline initialized for presenter: ${selectedPresenter}</div>`;
+
+      let progress = 0;
+
+      generationInterval = setInterval(() => {
+        progress += 4;
+        progressBar.style.width = `${progress}%`;
+
+        if (progress === 20) {
+          subtext.innerText = "Step 1: LLM Processing Tone & Script...";
+          document.getElementById('step1Indicator').classList.add('bg-blue-100', 'dark:bg-blue-600/20', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+          appendLog(`[LLM] Applied Tone: '${document.getElementById('toneSelect').value}'`);
+        } else if (progress === 50) {
+          subtext.innerText = "Step 2: TTS Voice Synthesis...";
+          document.getElementById('step2Indicator').classList.add('bg-blue-100', 'dark:bg-blue-600/20', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+          appendLog(`[TTS] Synthesizing voice audio stream for ${selectedPresenter}...`);
+        } else if (progress === 80) {
+          subtext.innerText = "Step 3: SensNova Avatar Rendering...";
+          document.getElementById('step3Indicator').classList.add('bg-blue-100', 'dark:bg-blue-600/20', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+          appendLog(`[SensNova] Rendering 1080p video frames...`);
+        } else if (progress >= 100) {
+          clearInterval(generationInterval);
+
+          // Simpan Hasil Generasi ke LocalStorage History
+          if (typeof saveHistoryItem === "function") {
+            saveHistoryItem({
+              id: Date.now(),
+              title: scriptText.substring(0, 45) + (scriptText.length > 45 ? "..." : ""),
+              type: "Magic Narration",
+              date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              status: "Completed"
+            });
+          }
+
+          setTimeout(() => {
+            document.getElementById('generationModal').classList.add('hidden');
+            openResultWithData(selectedPresenter, document.getElementById('toneSelect').value);
+          }, 500);
+        }
+      }, 120);
+    }
+
+    function appendLog(text) {
+      const logs = document.getElementById('terminalLogs');
+      const entry = document.createElement('div');
+      entry.innerText = text;
+      logs.appendChild(entry);
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function cancelGeneration() {
+      if (generationInterval) clearInterval(generationInterval);
+      document.getElementById('generationModal').classList.add('hidden');
+      showToast("Generation canceled.", "fa-xmark");
+    }
+
+    function openResultWithData(presenterName, tone) {
+      document.getElementById('resPresenter').innerText = presenterName;
+      document.getElementById('resTone').innerText = tone;
+      document.getElementById('resultAvatarImg').src = presenters[presenterName] || presenters['Andi'];
+      document.getElementById('resultModal').classList.remove('hidden');
+    }
+
+    function closeResultModal() {
+      document.getElementById('resultModal').classList.add('hidden');
+      isPlaying = false;
+      document.getElementById('playBtn').innerHTML = `<i class="fa-solid fa-play ml-1"></i>`;
+    }
+
+    function togglePlayState() {
+      isPlaying = !isPlaying;
+      const playBtn = document.getElementById('playBtn');
+      const subtitle = document.getElementById('subtitleText');
+
+      if (isPlaying) {
+        playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+        showToast("Playing generated preview...", "fa-play");
+        subtitle.classList.add('animate-pulse');
+      } else {
+        playBtn.innerHTML = `<i class="fa-solid fa-play ml-1"></i>`;
+        subtitle.classList.remove('animate-pulse');
+      }
+    }
+
+    function downloadMockVideo() {
+      showToast("Downloading 'Magic_Narration_SensNova.mp4'...", "fa-download");
+    }
+
+    function copyShareableLink() {
+      const dummyUrl = "https://sensnova.ai/v/share-" + Math.floor(Math.random() * 89999 + 10000);
+      const tempInput = document.createElement('input');
+      tempInput.value = dummyUrl;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      showToast("Shareable link copied to clipboard!", "fa-copy");
+    }
+
+    function showToast(message, iconClass = "fa-circle-check") {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = message;
+      document.getElementById('toastIcon').className = `fa-solid ${iconClass}`;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
